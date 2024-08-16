@@ -26,9 +26,21 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+   // Get the database and collection on which to run the operation
+   const db = client.db("AllProducts");
+   const allProducts = db.collection("products");
 
-    app.get("/name", (req, res) => {
-      res.send("my name is sarajit");
+    app.get("/allProducts", async(req, res) => {
+      try {
+        const limit = req.params(limit)
+        // getproducts
+        const result =await allProducts.find().toArray()
+        //send proudcts
+        res.send(limit)
+        
+      } catch (error) {
+        res.send(error)
+      }
     });
 
     // Send a ping to confirm a successful connection
@@ -43,9 +55,9 @@ run().catch(console.dir);
 
 // mongodb
 app.get("/", (req, res) => {
-  res.send("boss is sitting");
+  res.send("server is running ");
 });
 
 app.listen(port, () => {
-  console.log(`Bistro boss is sitting on port ${port}`);
+  console.log(`http://localhost:${port}`);
 });
