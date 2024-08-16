@@ -30,13 +30,30 @@ async function run() {
    const db = client.db("AllProducts");
    const allProducts = db.collection("products");
 
+  //  http://localhost:5000/AllProducts?limit=10&skip=30&priceSort=lowToHigh&priceRang=10-20&category=apple&search=searchValue
     app.get("/allProducts", async(req, res) => {
       try {
-        const limit = req.params(limit)
+
+        const pageLimit = parseInt(req.query.limit)
+        const pageSkip = parseInt(req.query.skip)
+        const priceRang = req.query.priceRang
+        const priceSort = req.query.priceSort
+        const category = req.query.category
+        const search = req.query.search
+        console.log(pageLimit,pageSkip,priceRang,priceSort,category,search)
+      
+        // findCategory
+        const categoryProducts = {category : category }
+
+
         // getproducts
-        const result =await allProducts.find().toArray()
+        const result =await allProducts.find(categoryProducts).toArray()
+        // leagth of products
+        const totalProducts =await allProducts.countDocuments(categoryProducts)
         //send proudcts
-        res.send(limit)
+        console.log(totalProducts)
+        res.send(result)
+
         
       } catch (error) {
         res.send(error)
