@@ -59,15 +59,39 @@ async function run() {
 
         // findCategory
         let categoryProducts = {};
-        if (typeof category != "undefined") {
+        if (category === "undefined" || category === "All") {
+         console.log("All")
+        }else{
           categoryProducts = { category: category };
+         
+        }
+        // get PricerangeProducts
+        let priceRangProducts = {};
+        if (priceRang != "undefined") {
+          let range = priceRang.split("-").map(Number);
+          priceRangProducts = {
+            $and: [
+              { price: { $gte: range[0] } },
+              { price: { $lt: range[1] } }
+            ]
+          }
+        }
+
+        // sort products ascending order and desending order
+        let sortWithPrice = {}
+        if(priceSort != "undefined"){
+          if(priceSort === "Low to High"){
+            sortWithPrice = {price : 1}
+          }else if(priceSort === "High to Low"){
+            sortWithPrice = {price : -1}
+          }
         }
 
         // getproducts
         const result = await allProducts
-          .find(categoryProducts)
+          .find(categoryProducts,priceRangProducts,)
           .limit(pageLimit)
-          .skip(currentPage * pageLimit)
+          .skip(currentPage * pageLimit).sort(sortWithPrice)
           .toArray();
 
         // leagth of products
