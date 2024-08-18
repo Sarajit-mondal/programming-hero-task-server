@@ -48,54 +48,50 @@ async function run() {
         const priceSort = req.query.priceSort;
         const category = req.query.category;
         const search = req.query.search;
-        console.log(
-          pageLimit,
-          currentPage,
-          priceRang,
-          priceSort,
-          category,
-          search
-        );
 
+        // Search with title
+        let searchTitle = {};
+        if (search !== "undefined") {
+          const searchQuery = new RegExp(search, "i");
+          searchTitle = { title: { $regex: searchQuery } };
+        }
         // findCategory
         let categoryProducts = {};
         if (category === "undefined" || category === "All") {
-         console.log("All")
-        }else{
+          console.log("All");
+        } else {
           categoryProducts = { category: category };
-         
         }
         // get PricerangeProducts
         let priceRangProducts = {};
-        if (priceRang != "undefined") {
+        if (priceRang === "undefined") {
           let range = priceRang.split("-").map(Number);
           priceRangProducts = {
-            $and: [
-              { price: { $gte: range[0] } },
-              { price: { $lt: range[1] } }
-            ]
-          }
+            $and: [{ price: { $gte: range[0] } }, { price: { $lt: range[1] } }],
+          };
         }
 
         // sort products ascending order and desending order
-        let sortWithPrice = {}
-        if(priceSort != "undefined"){
-          if(priceSort === "Low to High"){
-            sortWithPrice = {price : 1}
-          }else if(priceSort === "High to Low"){
-            sortWithPrice = {price : -1}
+        let sortWithPrice = {};
+        if (priceSort != "undefined") {
+          if (priceSort === "Low to High") {
+            sortWithPrice = { price: 1 };
+          } else if (priceSort === "High to Low") {
+            sortWithPrice = { price: -1 };
           }
         }
 
         // getproducts
         const result = await allProducts
-          .find(categoryProducts,priceRangProducts,)
+          .find(searchTitle, categoryProducts, priceRangProducts)
           .limit(pageLimit)
-          .skip(currentPage * pageLimit).sort(sortWithPrice)
+          .skip(currentPage * pageLimit)
+          .sort(sortWithPrice)
           .toArray();
 
         // leagth of products
         const totalProducts = await allProducts.countDocuments(
+          searchTitle,
           categoryProducts
         );
 
@@ -104,6 +100,7 @@ async function run() {
         res.send({ result, totalProducts });
       } catch (error) {
         res.send(error);
+        console.log(error);
       }
     });
 
